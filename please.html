@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Will You Treat Me? 🥺</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { height:100%; overflow:hidden; }
+        body {
+            font-family:'Poppins',sans-serif; height:100%;
+            display:flex; justify-content:center; align-items:center;
+            padding:10px; overflow:hidden; -webkit-tap-highlight-color:transparent;
+        }
+        .bg-animation {
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:linear-gradient(-45deg,#ff9a9e,#fad0c4,#a18cd1,#fbc2eb,#ff9a9e);
+            background-size:400% 400%; animation:gradientBG 8s ease infinite; z-index:-2;
+        }
+        @keyframes gradientBG {
+            0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;}
+        }
+        .hearts-container { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:-1; overflow:hidden; }
+        .floating-heart { position:absolute; animation:floatUp linear infinite; opacity:0.5; }
+        @keyframes floatUp {
+            0%{transform:translateY(100vh) rotate(0deg); opacity:0;}
+            10%{opacity:0.5;} 90%{opacity:0.5;}
+            100%{transform:translateY(-10vh) rotate(360deg); opacity:0;}
+        }
+        .card {
+            background:rgba(255,255,255,0.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+            border-radius:25px; padding:35px 25px; text-align:center;
+            box-shadow:0 15px 50px rgba(0,0,0,0.12);
+            width:100%; max-width:420px; max-height:90vh;
+            overflow-y:auto; overflow-x:hidden; position:absolute;
+            animation:cardAppear 0.8s cubic-bezier(0.34,1.56,0.64,1);
+            -webkit-overflow-scrolling:touch;
+        }
+        .card::-webkit-scrollbar { display:none; }
+        .card.hidden { display:none !important; }
+        @keyframes cardAppear {
+            0%{opacity:0; transform:scale(0.5) translateY(40px);}
+            100%{opacity:1; transform:scale(1) translateY(0);}
+        }
+        @keyframes cardExit {
+            0%{opacity:1; transform:scale(1);}
+            100%{opacity:0; transform:scale(0.8) translateY(-20px);}
+        }
+        .emoji-large { font-size:clamp(45px,12vw,70px); margin-bottom:10px; animation:bounce 2s ease-in-out infinite; display:inline-block; }
+        @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);} }
+        .question { font-size:clamp(18px,5vw,26px); font-weight:700; color:#333; margin-bottom:5px; line-height:1.3; }
+        .sub-text { font-size:clamp(11px,3vw,15px); color:#999; margin-bottom:25px; }
+        .btn-yes-wrap { display:flex; justify-content:center; margin-bottom:15px; }
+        .btn-area { position:relative; width:100%; height:120px; margin-bottom:5px; }
+        .btn {
+            padding:12px 35px; border:none; border-radius:50px;
+            font-size:clamp(14px,3.5vw,17px); font-weight:600; cursor:pointer;
+            transition:all 0.3s ease; font-family:'Poppins',sans-serif;
+            -webkit-tap-highlight-color:transparent; touch-action:manipulation; user-select:none;
+        }
+        .btn-yes {
+            background:linear-gradient(135deg,#56ab2f,#a8e063); color:white;
+            box-shadow:0 6px 20px rgba(86,171,47,0.4);
+            animation:pulseYes 2s ease-in-out infinite; z-index:5; position:relative;
+        }
+        @keyframes pulseYes {
+            0%,100%{box-shadow:0 6px 20px rgba(86,171,47,0.4);}
+            50%{box-shadow:0 6px 28px rgba(86,171,47,0.6);}
+        }
+        .btn-yes:active { transform:scale(0.95); }
+        .btn-no {
+            background:linear-gradient(135deg,#eb3349,#f45c43); color:white;
+            box-shadow:0 6px 20px rgba(235,51,73,0.3);
+            position:absolute; z-index:4; transition:none;
+        }
+        .escape-counter {
+            margin-top:5px; font-size:clamp(10px,2.8vw,13px); color:#aaa;
+            min-height:18px; font-weight:500; position:relative; z-index:1;
+        }
+        .food-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(6px,2vw,12px); margin-top:18px; }
+        .food-card {
+            background:linear-gradient(145deg,#fff,#f7f7f7); border-radius:16px;
+            padding:clamp(10px,3vw,18px) 5px; cursor:pointer;
+            transition:all 0.25s ease; border:2.5px solid transparent;
+            position:relative; -webkit-tap-highlight-color:transparent;
+        }
+        .food-card:active { transform:scale(0.95); }
+        .food-card .food-emoji { font-size:clamp(26px,8vw,38px); display:block; margin-bottom:4px; }
+        .food-card .food-title { font-size:clamp(9px,2.5vw,12px); font-weight:700; color:#333; }
+        .food-card .food-desc { font-size:clamp(7px,2vw,10px); color:#bbb; margin-top:2px; }
+        .food-card.selected {
+            border-color:#56ab2f !important;
+            background:linear-gradient(145deg,#f0fff0,#e8f5e9);
+            transform:scale(1.03); box-shadow:0 6px 18px rgba(86,171,47,0.2);
+        }
+        .food-card.selected::after {
+            content:'✓'; position:absolute; top:4px; right:5px;
+            background:#56ab2f; color:white; width:16px; height:16px;
+            border-radius:50%; font-size:10px;
+            display:flex; align-items:center; justify-content:center; font-weight:700;
+        }
+        .btn-continue {
+            background:linear-gradient(135deg,#667eea,#764ba2); color:white;
+            padding:11px 35px; border:none; border-radius:50px;
+            font-size:clamp(13px,3.5vw,16px); font-weight:600; cursor:pointer;
+            font-family:'Poppins',sans-serif; margin-top:18px;
+            transition:all 0.3s ease; display:none;
+            -webkit-tap-highlight-color:transparent;
+        }
+        .btn-continue.show { display:inline-block; animation:cardAppear 0.5s ease; }
+        .btn-continue:active { transform:scale(0.95); }
+        .datetime-container { margin-top:18px; display:flex; flex-direction:column; gap:10px; align-items:center; }
+        .input-group {
+            display:flex; align-items:center; gap:10px;
+            background:#f8f8f8; padding:10px 15px; border-radius:14px;
+            width:100%; max-width:280px; transition:all 0.3s ease;
+        }
+        .input-group:focus-within { background:#fff; box-shadow:0 4px 15px rgba(0,0,0,0.08); }
+        .input-icon { font-size:20px; }
+        .input-wrapper { display:flex; flex-direction:column; flex:1; }
+        .input-wrapper label { font-size:9px; color:#aaa; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; text-align:left; }
+        .input-wrapper input {
+            border:none; background:transparent; font-family:'Poppins',sans-serif;
+            font-size:clamp(13px,3.5vw,15px); font-weight:600; color:#333; outline:none; width:100%;
+        }
+        .chosen-display {
+            display:inline-block; background:linear-gradient(135deg,#56ab2f,#a8e063);
+            color:white; padding:3px 14px; border-radius:50px;
+            font-size:clamp(10px,2.8vw,13px); font-weight:600; margin-bottom:5px;
+        }
+        .clock-tick { animation:tick 1s ease-in-out infinite; display:inline-block; }
+        @keyframes tick { 0%,100%{transform:scale(1);} 50%{transform:scale(1.12);} }
+        .warning-emoji { font-size:clamp(50px,14vw,70px); margin-bottom:8px; animation:shake 0.5s ease-in-out infinite; display:inline-block; }
+        @keyframes shake { 0%,100%{transform:rotate(0deg);} 25%{transform:rotate(-8deg);} 75%{transform:rotate(8deg);} }
+        .warning-text {
+            font-size:clamp(22px,6vw,30px); font-weight:800;
+            background:linear-gradient(135deg,#eb3349,#f45c43);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            background-clip:text; margin-bottom:6px;
+        }
+        .warning-sub { font-size:clamp(11px,3vw,14px); color:#666; margin-bottom:15px; line-height:1.5; }
+        .warning-sub small { font-size:clamp(9px,2.5vw,11px); color:#aaa; }
+        .warning-details-box {
+            background:#fff3f3; border-radius:14px; padding:10px 16px;
+            display:inline-block; margin-bottom:18px;
+        }
+        .wd-food { font-size:clamp(10px,2.8vw,13px); color:#999; }
+        .wd-datetime { font-size:clamp(11px,3vw,14px); font-weight:700; color:#eb3349; margin-top:4px; line-height:1.6; }
+        .btn-okay {
+            background:linear-gradient(135deg,#56ab2f,#a8e063); color:white;
+            padding:12px 45px; border:none; border-radius:50px;
+            font-size:clamp(14px,3.8vw,18px); font-weight:700; cursor:pointer;
+            font-family:'Poppins',sans-serif; transition:all 0.3s ease;
+            animation:pulseYes 2s ease-in-out infinite;
+            -webkit-tap-highlight-color:transparent;
+        }
+        .btn-okay:active { transform:scale(0.95); }
+
+        /* === CAMERA STYLES (SAME PAGE) === */
+        .camera-view {
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:#000; z-index:1000; display:none;
+        }
+        .camera-view.show { display:block; }
+        .cam-header {
+            position:absolute; top:0; left:0; width:100%;
+            z-index:10; text-align:center; padding:20px 15px;
+            background:linear-gradient(to bottom,rgba(0,0,0,0.7),transparent);
+        }
+        .smile-title {
+            font-size:clamp(28px,8vw,45px); font-weight:800; color:white;
+            text-shadow:0 3px 15px rgba(0,0,0,0.5);
+            animation:smilePulse 1.5s ease-in-out infinite;
+        }
+        @keyframes smilePulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
+        .smile-sub { font-size:clamp(12px,3.5vw,16px); color:rgba(255,255,255,0.85); margin-top:5px; }
+        #video {
+            width:100%; height:100%; object-fit:cover; transform:scaleX(-1);
+        }
+        #canvas { display:none; }
+        #capturedPhoto {
+            position:absolute; top:0; left:0;
+            width:100%; height:100%; object-fit:cover;
+            transform:scaleX(-1); display:none;
+        }
+        .countdown {
+            position:absolute; top:50%; left:50%;
+            transform:translate(-50%,-50%);
+            font-size:clamp(120px,35vw,200px);
+            font-weight:900; color:white;
+            text-shadow:0 5px 30px rgba(0,0,0,0.7);
+            z-index:15; display:none;
+            animation:countdownPop 1s ease-in-out;
+        }
+        .countdown.show { display:block; }
+        @keyframes countdownPop {
+            0%{transform:translate(-50%,-50%) scale(2); opacity:0;}
+            50%{transform:translate(-50%,-50%) scale(1); opacity:1;}
+            100%{transform:translate(-50%,-50%) scale(0.5); opacity:0;}
+        }
+        .flash {
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:white; z-index:50; opacity:0; pointer-events:none;
+            animation:flashAnim 0.5s ease-out;
+        }
+        @keyframes flashAnim { 0%{opacity:1;} 100%{opacity:0;} }
+        .cam-bottom {
+            position:absolute; bottom:0; left:0; width:100%;
+            z-index:10; text-align:center; padding:25px 15px 35px;
+            background:linear-gradient(to top,rgba(0,0,0,0.75),transparent);
+            display:flex; flex-direction:column; align-items:center; gap:12px;
+        }
+        .status-msg { color:white; font-size:clamp(13px,3.5vw,16px); font-weight:600; }
+        .btn-retake, .btn-save, .btn-done {
+            padding:11px 28px; border:none; border-radius:50px;
+            font-size:clamp(12px,3vw,15px); font-weight:600; cursor:pointer;
+            font-family:'Poppins',sans-serif;
+            -webkit-tap-highlight-color:transparent;
+        }
+        .action-btns { display:none; gap:10px; flex-wrap:wrap; justify-content:center; }
+        .action-btns.show { display:flex; }
+        .btn-retake { background:rgba(255,255,255,0.25); color:white; border:2px solid white; }
+        .btn-save { background:linear-gradient(135deg,#56ab2f,#a8e063); color:white; }
+        .btn-done { background:linear-gradient(135deg,#667eea,#764ba2); color:white; }
+        .btn-retake:active, .btn-save:active, .btn-done:active { transform:scale(0.95); }
+        .corner-deco {
+            position:absolute; z-index:6;
+            font-size:clamp(20px,6vw,32px); pointer-events:none;
+            animation:cornerBounce 2s ease-in-out infinite;
+        }
+        .corner-deco.tl { top:clamp(110px,22vw,150px); left:clamp(15px,4vw,25px); }
+        .corner-deco.tr { top:clamp(110px,22vw,150px); right:clamp(15px,4vw,25px); animation-delay:0.5s; }
+        .corner-deco.bl { bottom:clamp(160px,30vw,210px); left:clamp(15px,4vw,25px); animation-delay:1s; }
+        .corner-deco.br { bottom:clamp(160px,30vw,210px); right:clamp(15px,4vw,25px); animation-delay:1.5s; }
+        @keyframes cornerBounce { 0%,100%{transform:scale(1);} 50%{transform:scale(1.2);} }
+        .cam-error {
+            color:white; position:absolute; top:50%; left:50%;
+            transform:translate(-50%,-50%); text-align:center;
+            padding:25px; font-size:clamp(14px,4vw,17px);
+            z-index:8; background:rgba(0,0,0,0.6);
+            border-radius:15px; max-width:85%;
+        }
+        .cam-error .err-emoji { font-size:55px; display:block; margin-bottom:12px; }
+        .cam-error small { display:block; margin-top:10px; opacity:0.75; font-size:12px; }
+        .saved-toast {
+            position:fixed; top:50%; left:50%;
+            transform:translate(-50%,-50%);
+            background:rgba(86,171,47,0.95); color:white;
+            padding:15px 35px; border-radius:50px;
+            font-size:15px; font-weight:700; z-index:200;
+            display:none; box-shadow:0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .confetti-container { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:100; overflow:hidden; }
+        .confetti { position:absolute; top:-10px; animation:confettiFall linear forwards; }
+        @keyframes confettiFall {
+            0%{transform:translateY(-10px) rotate(0deg); opacity:1;}
+            100%{transform:translateY(100vh) rotate(720deg); opacity:0;}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation"></div>
+    <div class="hearts-container" id="heartsContainer"></div>
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <!-- PAGE 1 -->
+    <div class="card" id="page1">
+        <div class="emoji-large">🥺</div>
+        <div class="question">Will You Treat Me Today?</div>
+        <div class="sub-text">Pretty please... I'm so hungry! 🍕</div>
+        <div class="btn-yes-wrap">
+            <button class="btn btn-yes" id="btnYes" onclick="handleYes()">✅ Yes!</button>
+        </div>
+        <div class="btn-area" id="btnArea">
+            <button class="btn btn-no" id="btnNo" style="left:50%;top:50%;transform:translate(-50%,-50%);">❌ No</button>
+        </div>
+        <div class="escape-counter" id="escapeCounter"></div>
+    </div>
+
+    <!-- PAGE 2 -->
+    <div class="card hidden" id="page2">
+        <div class="emoji-large">🎉</div>
+        <div class="question">Yay! You're the Best!</div>
+        <div class="sub-text">Where are we going to eat? 🤤</div>
+        <div class="food-grid">
+            <div class="food-card" onclick="selectFood(this,'Fast Food 🍔')"><span class="food-emoji">🍔</span><div class="food-title">Fast Food</div><div class="food-desc">Quick & yummy</div></div>
+            <div class="food-card" onclick="selectFood(this,'Street Food 🛒')"><span class="food-emoji">🛒</span><div class="food-title">Street Food</div><div class="food-desc">Adventurous</div></div>
+            <div class="food-card" onclick="selectFood(this,'Coffee ☕')"><span class="food-emoji">☕</span><div class="food-title">Coffee</div><div class="food-desc">Chill & cozy</div></div>
+            <div class="food-card" onclick="selectFood(this,'Restaurant 🍽️')"><span class="food-emoji">🍽️</span><div class="food-title">Restaurant</div><div class="food-desc">Fancy dining</div></div>
+            <div class="food-card" onclick="selectFood(this,'Dessert 🍰')"><span class="food-emoji">🍰</span><div class="food-title">Dessert</div><div class="food-desc">Sweet treats</div></div>
+            <div class="food-card" onclick="selectFood(this,'BBQ 🥩')"><span class="food-emoji">🥩</span><div class="food-title">BBQ / Grill</div><div class="food-desc">Smoky & hot</div></div>
+        </div>
+        <button class="btn-continue" id="btnContinue" onclick="goToDateTime()">Continue ➜</button>
+    </div>
+
+    <!-- PAGE 3 -->
+    <div class="card hidden" id="page3">
+        <div class="emoji-large clock-tick">📅</div>
+        <div class="question">When Are We Going?</div>
+        <div class="sub-text">Pick the perfect date & time!</div>
+        <div id="chosenFoodDisplay"></div>
+        <div class="datetime-container">
+            <div class="input-group">
+                <span class="input-icon">📆</span>
+                <div class="input-wrapper"><label>Date</label><input type="date" id="dateInput"></div>
+            </div>
+            <div class="input-group">
+                <span class="input-icon">🕐</span>
+                <div class="input-wrapper"><label>Time</label><input type="time" id="timeInput"></div>
+            </div>
+        </div>
+        <button class="btn-continue" id="btnDateTime" onclick="goToWarning()">Set Date ➜</button>
+    </div>
+
+    <!-- PAGE 4 -->
+    <div class="card hidden" id="page4">
+        <div class="warning-emoji">⚠️</div>
+        <div class="warning-text">DON'T BE LATE!</div>
+        <div class="warning-sub">
+            I'll be waiting... I get hangry! 😤🍴<br>
+            <small>Camera opens after you promise!</small>
+        </div>
+        <div id="warningDetails"></div>
+        <button class="btn-okay" onclick="handleOkay()">👍 Okay, I Promise!</button>
+    </div>
+
+    <!-- CAMERA VIEW (SAME PAGE) -->
+    <div class="camera-view" id="cameraView">
+        <div class="cam-header">
+            <div class="smile-title">😄 Smile!</div>
+            <div class="smile-sub" id="camSubText">Get ready... auto capture!</div>
+        </div>
+        <div class="corner-deco tl">💖</div>
+        <div class="corner-deco tr">✨</div>
+        <div class="corner-deco bl">🌸</div>
+        <div class="corner-deco br">💫</div>
+
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="canvas"></canvas>
+        <img id="capturedPhoto" alt="Your smile">
+
+        <div class="countdown" id="countdown">3</div>
+
+        <div class="cam-error" id="camError" style="display:none;">
+            <span class="err-emoji">📷</span>
+            <strong>Camera Not Available</strong>
+            <small>Please allow camera access and make sure you're on <b>HTTPS</b> or <b>localhost</b>. On phone, host it online (Netlify/GitHub Pages).</small>
+            <button class="btn-done" onclick="closeCamera()" style="margin-top:15px;">Close</button>
+        </div>
+
+        <div class="cam-bottom" id="camBottom">
+            <div class="status-msg" id="statusMsg">📸 Starting camera...</div>
+            <div class="action-btns" id="actionBtns">
+                <button class="btn-retake" onclick="retakePhoto()">🔄 Retake</button>
+                <button class="btn-save" onclick="savePhoto()">💾 Save Photo</button>
+                <button class="btn-done" onclick="closeCamera()">✅ Done</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="saved-toast" id="savedToast">✅ Photo Saved!</div>
+
+    <script>
+        let noClickCount = 0;
+        let yesButtonSize = 1;
+        let selectedFood = '';
+        let selectedDate = '';
+        let selectedTime = '';
+        let cameraStream = null;
+
+        // Floating hearts
+        (function() {
+            const c = document.getElementById('heartsContainer');
+            const h = ['💕','💖','💗','✨','🌸','💫','🦋'];
+            for (let i = 0; i < 12; i++) {
+                const d = document.createElement('div');
+                d.classList.add('floating-heart');
+                d.textContent = h[Math.floor(Math.random() * h.length)];
+                d.style.left = Math.random() * 100 + '%';
+                d.style.animationDuration = (Math.random() * 5 + 6) + 's';
+                d.style.animationDelay = (Math.random() * 10) + 's';
+                d.style.fontSize = (Math.random() * 8 + 12) + 'px';
+                c.appendChild(d);
+            }
+        })();
+
+        const btnNo = document.getElementById('btnNo');
+        const btnArea = document.getElementById('btnArea');
+
+        function moveNoBtn() {
+            noClickCount++;
+            yesButtonSize = Math.min(yesButtonSize + 0.05, 1.6);
+            document.getElementById('btnYes').style.transform = 'scale(' + yesButtonSize + ')';
+
+            const aW = btnArea.offsetWidth;
+            const aH = btnArea.offsetHeight;
+            const bW = btnNo.offsetWidth;
+            const bH = btnNo.offsetHeight;
+
+            const nX = Math.max(5, Math.random() * (aW - bW - 5));
+            const nY = Math.max(5, Math.random() * (aH - bH - 5));
+
+            btnNo.style.left = nX + 'px';
+            btnNo.style.top = nY + 'px';
+            btnNo.style.transform = 'none';
+
+            const sc = Math.max(0.6, 1 - noClickCount * 0.03);
+            btnNo.style.fontSize = Math.max(10, 15 * sc) + 'px';
+            btnNo.style.padding = Math.max(6, 12 * sc) + 'px ' + Math.max(15, 35 * sc) + 'px';
+
+            const msgs = ["You can't escape! 😤","Nice try! 😏","Just say YES! 🥺","No button is scared! 😂","Really?? 😜","I won't give up! 💪","Click YES already! 🌟","Resistance is futile! 🤖","Your heart says yes 💖","Just click YES! 🎯"];
+            const counter = document.getElementById('escapeCounter');
+            counter.textContent = msgs[Math.min(noClickCount - 1, msgs.length - 1)];
+            counter.style.color = 'hsl(' + (noClickCount * 30) + ', 70%, 55%)';
+        }
+
+        btnNo.addEventListener('mouseenter', moveNoBtn);
+        btnNo.addEventListener('touchstart', function(e) { e.preventDefault(); moveNoBtn(); }, { passive: false });
+        btnNo.addEventListener('click', function(e) { e.preventDefault(); moveNoBtn(); });
+
+        function transitionPages(hideId, showId, cb) {
+            const hide = document.getElementById(hideId);
+            hide.style.animation = 'cardExit 0.4s ease forwards';
+            setTimeout(() => {
+                hide.classList.add('hidden');
+                hide.style.animation = '';
+                const show = document.getElementById(showId);
+                show.classList.remove('hidden');
+                show.style.animation = 'cardAppear 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                if (cb) cb();
+            }, 400);
+        }
+
+        function handleYes() {
+            launchConfetti();
+            transitionPages('page1', 'page2');
+        }
+
+        function selectFood(el, food) {
+            document.querySelectorAll('.food-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedFood = food;
+            document.getElementById('btnContinue').classList.add('show');
+        }
+
+        function goToDateTime() {
+            if (!selectedFood) return;
+            launchConfetti();
+            transitionPages('page2', 'page3', () => {
+                document.getElementById('chosenFoodDisplay').innerHTML = '<div class="chosen-display">' + selectedFood + '</div>';
+                const today = new Date().toISOString().split('T')[0];
+                const di = document.getElementById('dateInput');
+                const ti = document.getElementById('timeInput');
+                di.min = today; di.value = ''; ti.value = '';
+                di.onchange = checkDateTime;
+                ti.onchange = checkDateTime;
+                document.getElementById('btnDateTime').classList.remove('show');
+            });
+        }
+
+        function checkDateTime() {
+            const d = document.getElementById('dateInput').value;
+            const t = document.getElementById('timeInput').value;
+            if (d && t) {
+                selectedDate = d; selectedTime = t;
+                document.getElementById('btnDateTime').classList.add('show');
+            } else {
+                document.getElementById('btnDateTime').classList.remove('show');
+            }
+        }
+
+        function formatDate(s) {
+            return new Date(s + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function formatTime(s) {
+            const parts = s.split(':');
+            let hr = parseInt(parts[0]);
+            const m = parts[1];
+            const ap = hr >= 12 ? 'PM' : 'AM';
+            hr = hr % 12 || 12;
+            return hr + ':' + m + ' ' + ap;
+        }
+
+        function goToWarning() {
+            if (!selectedDate || !selectedTime) return;
+            transitionPages('page3', 'page4', () => {
+                document.getElementById('warningDetails').innerHTML =
+                    '<div class="warning-details-box">' +
+                        '<div class="wd-food">📍 ' + selectedFood + '</div>' +
+                        '<div class="wd-datetime">📆 ' + formatDate(selectedDate) + '<br>🕐 ' + formatTime(selectedTime) + '</div>' +
+                    '</div>';
+            });
+        }
+
+        // OKAY → Open Camera in SAME page
+        function handleOkay() {
+            launchConfetti();
+            openCamera();
+        }
+
+        // ===== CAMERA FUNCTIONS =====
+        async function openCamera() {
+            const camView = document.getElementById('cameraView');
+            camView.classList.add('show');
+            document.getElementById('page4').classList.add('hidden');
+
+            const video = document.getElementById('video');
+            const errorBox = document.getElementById('camError');
+            const statusMsg = document.getElementById('statusMsg');
+
+            errorBox.style.display = 'none';
+            statusMsg.textContent = '📸 Starting camera...';
+
+            try {
+                // Try front camera first, fallback to any camera
+                let constraints = {
+                    video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                };
+
+                try {
+                    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                } catch (e) {
+                    // Fallback to any camera
+                    cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                }
+
+                video.srcObject = cameraStream;
+                await video.play();
+
+                statusMsg.textContent = '😊 Get ready to smile!';
+
+                // Start countdown after 1.5 seconds
+                setTimeout(() => startCountdown(), 1500);
+
+            } catch (err) {
+                console.error('Camera error:', err);
+                errorBox.style.display = 'block';
+                document.getElementById('camBottom').style.display = 'none';
+            }
+        }
+
+        function startCountdown() {
+            const countdown = document.getElementById('countdown');
+            const statusMsg = document.getElementById('statusMsg');
+            let count = 3;
+
+            statusMsg.textContent = '📸 Auto capture in...';
+            countdown.classList.add('show');
+            countdown.textContent = count;
+
+            const interval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdown.style.animation = 'none';
+                    void countdown.offsetWidth; // reset animation
+                    countdown.style.animation = 'countdownPop 1s ease-in-out';
+                    countdown.textContent = count;
+                } else if (count === 0) {
+                    countdown.style.animation = 'none';
+                    void countdown.offsetWidth;
+                    countdown.style.animation = 'countdownPop 1s ease-in-out';
+                    countdown.textContent = '📸';
+                } else {
+                    clearInterval(interval);
+                    countdown.classList.remove('show');
+                    autoCapture();
+                }
+            }, 1000);
+        }
+
+        function autoCapture() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const captured = document.getElementById('capturedPhoto');
+            const statusMsg = document.getElementById('statusMsg');
+
+            // Flash
+            const flash = document.createElement('div');
+            flash.className = 'flash';
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 500);
+
+            // Capture
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0);
+
+            captured.src = canvas.toDataURL('image/png');
+            captured.style.display = 'block';
+            video.style.display = 'none';
+
+            statusMsg.textContent = '✨ Beautiful smile captured! 💖';
+            document.getElementById('actionBtns').classList.add('show');
+
+            launchConfetti();
+        }
+
+        function retakePhoto() {
+            const video = document.getElementById('video');
+            const captured = document.getElementById('capturedPhoto');
+            document.getElementById('actionBtns').classList.remove('show');
+            captured.style.display = 'none';
+            video.style.display = 'block';
+            document.getElementById('statusMsg').textContent = '😊 Get ready to smile!';
+            setTimeout(() => startCountdown(), 800);
+        }
+
+        function savePhoto() {
+            const canvas = document.getElementById('canvas');
+            const link = document.createElement('a');
+            link.download = 'smile_' + Date.now() + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+
+            const toast = document.getElementById('savedToast');
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        }
+
+        function closeCamera() {
+            // Stop camera stream
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(t => t.stop());
+                cameraStream = null;
+            }
+            document.getElementById('cameraView').classList.remove('show');
+            document.getElementById('video').style.display = 'block';
+            document.getElementById('capturedPhoto').style.display = 'none';
+            document.getElementById('actionBtns').classList.remove('show');
+            restart();
+        }
+
+        function restart() {
+            noClickCount = 0;
+            yesButtonSize = 1;
+            selectedFood = '';
+            selectedDate = '';
+            selectedTime = '';
+
+            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+            document.getElementById('btnYes').style.transform = 'scale(1)';
+            btnNo.style.left = '50%';
+            btnNo.style.top = '50%';
+            btnNo.style.transform = 'translate(-50%,-50%)';
+            btnNo.style.fontSize = '15px';
+            btnNo.style.padding = '12px 35px';
+            document.getElementById('escapeCounter').textContent = '';
+            document.querySelectorAll('.food-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('btnContinue').classList.remove('show');
+            document.getElementById('btnDateTime').classList.remove('show');
+
+            const p1 = document.getElementById('page1');
+            p1.classList.remove('hidden');
+            p1.style.animation = 'cardAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        }
+
+        function launchConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#ff6b6b','#feca57','#48dbfb','#ff9ff3','#54a0ff','#5f27cd','#f368e0','#a8e063'];
+            for (let i = 0; i < 40; i++) {
+                setTimeout(() => {
+                    const c = document.createElement('div');
+                    c.classList.add('confetti');
+                    c.style.left = Math.random() * 100 + '%';
+                    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    const sz = Math.random() * 7 + 4;
+                    c.style.width = sz + 'px';
+                    c.style.height = sz + 'px';
+                    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                    c.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    container.appendChild(c);
+                    setTimeout(() => c.remove(), 4000);
+                }, i * 25);
+            }
+        }
+    </script>
+
+</body>
+</html>
